@@ -11,6 +11,7 @@ bool is_running = true;
 
 MyGame* game = new MyGame();
 
+// recieves data from the server
 static int on_receive(void* socket_ptr) {
     TCPsocket socket = (TCPsocket)socket_ptr;
 
@@ -51,6 +52,7 @@ static int on_receive(void* socket_ptr) {
     return 0;
 }
 
+// sends data to server
 static int on_send(void* socket_ptr) {
     TCPsocket socket = (TCPsocket)socket_ptr;
 
@@ -75,6 +77,7 @@ static int on_send(void* socket_ptr) {
     return 0;
 }
 
+// game loop
 void loop(SDL_Renderer* renderer) {
     SDL_Event event;
 
@@ -112,6 +115,7 @@ void loop(SDL_Renderer* renderer) {
     }
 }
 
+// initialising window and game renderer
 int run_game() {
     SDL_Window* window = SDL_CreateWindow(
         "Multiplayer Pong Client",
@@ -120,14 +124,14 @@ int run_game() {
         SDL_WINDOW_SHOWN
     );
 
-    if (nullptr == window) {
+    if (window == nullptr) {
         std::cout << "Failed to create window" << SDL_GetError() << std::endl;
         return -1;
     }
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    if (nullptr == renderer) {
+    if (renderer == nullptr) {
         std::cout << "Failed to create renderer" << SDL_GetError() << std::endl;
         return -1;
     }
