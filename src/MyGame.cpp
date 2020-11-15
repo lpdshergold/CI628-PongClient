@@ -3,6 +3,23 @@
 
 using namespace std;
 
+Player::Player(int x, int y, int width, int height) {
+    X = x; 
+    Y = y;
+    Width = width;
+    Height = height;
+
+    bat = { X,Y,Width,Height };
+}
+
+void Player::setY(int yPos) {
+    Y = yPos;
+}
+
+void Player::updateBat() {
+    bat = { X,Y,Width,Height };
+}
+
 // recieve data from server
 void MyGame::on_receive(string cmd, vector<string>& args) {
     if (cmd == "GAME_DATA") {
@@ -36,7 +53,8 @@ void MyGame::input(SDL_Event& event) {
 }
 
 void MyGame::update() {
-    player1.y = game_data.player1Y;
+    player.setY(game_data.player1Y);
+    player.updateBat();
     player2.y = game_data.player2Y;
     ball.y = game_data.ballY;
     ball.x = game_data.ballX;
@@ -44,7 +62,7 @@ void MyGame::update() {
 
 void MyGame::render(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawRect(renderer, &player1);
+    SDL_RenderDrawRect(renderer, &player.bat);
     SDL_RenderDrawRect(renderer, &player2);
     SDL_RenderDrawRect(renderer, &ball);
 }
