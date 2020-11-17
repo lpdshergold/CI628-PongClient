@@ -33,6 +33,19 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
     } else {
         cout << "Received: " << cmd << endl;
     }
+    
+    // check for left and right wall hits
+    if (cmd == "HIT_WALL_LEFTGAME_DATA") {
+        cout << "Wall hit on the left!!" << endl;
+    } else if (cmd == "HIT_WALL_RIGHTGAME_DATA") {
+        cout << "Wall hit on the right too!!" << endl;
+    }
+
+    if (cmd == "BALL_HIT_BAT1") {
+        cout << "BAT1 was hit by the ball!" << endl;
+    } else if (cmd == "BALL_HIT_BAT2") {
+        cout << "No wait, ball hit BAT2 instead!" << endl;
+    }
 }
 
 void MyGame::send(string message) {

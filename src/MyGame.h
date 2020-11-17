@@ -16,10 +16,7 @@ static struct GameData {
 
 class Player {
     private:
-        int X = 0;
-        int Y = 0;
-        int Width = 0;
-        int Height = 0;
+        int X = 0, Y = 0, Width = 0, Height = 0;
 
     public:
         SDL_Rect bat = {};
