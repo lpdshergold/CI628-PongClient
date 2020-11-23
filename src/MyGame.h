@@ -12,6 +12,8 @@ static struct GameData {
     int player2Y = 0;
     int ballX = 0;
     int ballY = 0;
+    int playerOneScore = 0;
+    int playerTwoScore = 0;
 } game_data;
 
 class Player {
@@ -29,9 +31,8 @@ class MyGame {
 
     private:
     // player 1 and 2
-        Player player{ 200, 0, 25, 75 };
-        //SDL_Rect player1 = { 200, 0, 25, 75 };
-        SDL_Rect player2 = { 570, 0, 25, 75 };
+        Player playerOne{ 200, 0, 25, 75 };
+        Player playerTwo{ 570, 0, 25, 75 };
         SDL_Rect ball = { 400, 0 , 30, 30 };
 
     public:

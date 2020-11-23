@@ -33,14 +33,20 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
     } else {
         cout << "Received: " << cmd << endl;
     }
-    
-    // check for left and right wall hits
-    if (cmd == "HIT_WALL_LEFTGAME_DATA") {
-        cout << "Wall hit on the left!!" << endl;
-    } else if (cmd == "HIT_WALL_RIGHTGAME_DATA") {
-        cout << "Wall hit on the right too!!" << endl;
+
+    // check for SCORES from the server
+    if (cmd == "SCORES") {
+
+        // should get two arguments
+        if (args.size() == 2) {
+
+            // store server score
+            game_data.playerOneScore = stoi(args.at(0));
+            game_data.playerTwoScore = stoi(args.at(1));
+        }
     }
 
+    // check to see if the ball hit one of the bats
     if (cmd == "BALL_HIT_BAT1") {
         cout << "BAT1 was hit by the ball!" << endl;
     } else if (cmd == "BALL_HIT_BAT2") {
@@ -60,22 +66,29 @@ void MyGame::input(SDL_Event& event) {
         case SDLK_s:
             send(event.type == SDL_KEYDOWN ? "S_DOWN" : "S_UP");
             break;
+        case SDLK_i:
+            send(event.type == SDL_KEYDOWN ? "I_DOWN" : "I_UP");
+            break;
+        case SDLK_k:
+            send(event.type == SDL_KEYDOWN ? "K_DOWN" : "K_UP");
+            break;
         default:
             cout << "Not aware of that key" << endl;
     }
 }
 
 void MyGame::update() {
-    player.setY(game_data.player1Y);
-    player.updateBat();
-    player2.y = game_data.player2Y;
+    playerOne.setY(game_data.player1Y);
+    playerOne.updateBat();
+    playerTwo.setY(game_data.player2Y);
+    playerTwo.updateBat();
     ball.y = game_data.ballY;
     ball.x = game_data.ballX;
 }
 
 void MyGame::render(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawRect(renderer, &player.bat);
-    SDL_RenderDrawRect(renderer, &player2);
+    SDL_RenderDrawRect(renderer, &playerOne.bat);
+    SDL_RenderDrawRect(renderer, &playerTwo.bat);
     SDL_RenderDrawRect(renderer, &ball);
 }
