@@ -6,6 +6,7 @@
 #include <string>
 
 #include "SDL.h"
+#include "SDL_mixer.h"
 
 static struct GameData {
     int player1Y = 0;
@@ -24,19 +25,23 @@ class Player {
         SDL_Rect bat = {};
         Player(int x, int y, int width, int height);
         void setY(int yPos);
-        void updateBat();
+        void getBat();
 };
 
 class MyGame {
-
     private:
-    // player 1 and 2
+        // Sound effect paths
+        const char* bat_hit_path = "../res/sounds/bat_hit.wav";
+
+        // player 1 and 2
         Player playerOne{ 200, 0, 25, 75 };
         Player playerTwo{ 570, 0, 25, 75 };
         SDL_Rect ball = { 400, 0 , 30, 30 };
 
     public:
         std::vector<std::string> messages;
+
+        Mix_Chunk playSound(const char* path);
 
         void on_receive(std::string message, std::vector<std::string>& args);
         void send(std::string message);

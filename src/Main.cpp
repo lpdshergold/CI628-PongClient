@@ -1,4 +1,5 @@
 #include "SDL_net.h"
+#include "SDL_mixer.h"
 
 #include "MyGame.h"
 
@@ -144,17 +145,30 @@ int run_game() {
 int main(int argc, char** argv) {
 
     // Initialize SDL
-    if (SDL_Init(0) == -1) {
+    if (SDL_Init(0) < 0) {
         printf("SDL_Init: %s\n", SDL_GetError());
         exit(1);
     }
 
     // Initialize SDL_net
-    if (SDLNet_Init() == -1) {
+    if (SDLNet_Init() < 0) {
         printf("SDLNet_Init: %s\n", SDLNet_GetError());
         exit(2);
     }
 
+    // Initialize SDL_INIT_AUDIO
+    // Audio exits will be numbered in the 10s
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        printf("SDL_INIT_AUDIO: %s\n", SDL_GetError());
+        exit(10);
+    }
+
+    // Initialize SLD_Mixer
+    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) < 0) {
+        printf("SDL_Mixer: %s\n", Mix_GetError());
+        exit(11);
+    }
+    
     IPaddress ip;
 
     // Resolve host (ip name + port) into an IPaddress type
@@ -183,6 +197,9 @@ int main(int argc, char** argv) {
 
     // Shutdown SDL_net
     SDLNet_Quit();
+
+    // Shutdown SDL_Mixer
+    Mix_CloseAudio();
 
     // Shutdown SDL
     SDL_Quit();
