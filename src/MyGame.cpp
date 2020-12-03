@@ -54,7 +54,7 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
 
     // check for SCORES from the server
     if (cmd == "SCORES") {
-
+        MyGame::playSound(goal_path);
         // should get two arguments
         if (args.size() == 2) {
 

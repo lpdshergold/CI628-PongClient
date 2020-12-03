@@ -31,7 +31,8 @@ class Player {
 class MyGame {
     private:
         // Sound effect paths
-        const char* bat_hit_path = "../res/sounds/bat_hit.wav";
+        const char* bat_hit_path = "res/sounds/bat_hit.wav";
+        const char* goal_path = "res/sounds/goal.wav";
 
         // player 1 and 2
         Player playerOne{ 200, 0, 25, 75 };
