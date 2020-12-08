@@ -7,12 +7,15 @@
 
 #include "SDL.h"
 #include "SDL_mixer.h"
+#include "SDL_ttf.h"
 
 static struct GameData {
     int player1Y = 0;
     int player2Y = 0;
+
     int ballX = 0;
     int ballY = 0;
+
     int playerOneScore = 0;
     int playerTwoScore = 0;
 } game_data;
@@ -30,16 +33,24 @@ class Player {
 
 class MyGame {
     private:
-        // Sound effect paths
-        const char* bat_hit_path = "res/sounds/bat_hit.wav";
-        const char* goal_path = "res/sounds/goal.wav";
+        // sound effect paths
+        const char* BAT_HIT_PATH = "res/sounds/bat_hit.wav";
+        const char* GOAL_PATH = "res/sounds/goal.wav";
+
+        // image paths
+        //const char* FOOTBALL_FIELD_PATH = "res/images/football_field.png";
+
+        // font path
+        const char* ARIAL_FONT_PATH = "res/fonts/arial.ttf";
 
         // player 1 and 2
         Player playerOne{ 200, 0, 25, 75 };
-        Player playerTwo{ 570, 0, 25, 75 };
+        Player playerTwo{ 600, 0, 25, 75 };
         SDL_Rect ball = { 400, 0 , 30, 30 };
 
     public:
+        const char* FOOTBALL_FIELD_PATH = "res/images/football_field.png";
+
         std::vector<std::string> messages;
 
         Mix_Chunk playSound(const char* path);

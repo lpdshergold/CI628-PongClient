@@ -1,5 +1,7 @@
 #include "SDL_net.h"
 #include "SDL_mixer.h"
+#include "SDL_ttf.h"
+#include "SDL_image.h"
 
 #include "MyGame.h"
 
@@ -169,6 +171,12 @@ int main(int argc, char** argv) {
         exit(11);
     }
     
+    // Initialize TTF
+    if (TTF_Init < 0) {
+        printf("TTF_Init: %s\n", TTF_GetError());
+        exit(21);
+    }
+
     IPaddress ip;
 
     // Resolve host (ip name + port) into an IPaddress type
@@ -198,8 +206,11 @@ int main(int argc, char** argv) {
     // Shutdown SDL_net
     SDLNet_Quit();
 
+    // Shutdown TTF
+    TTF_Quit();
+
     // Shutdown SDL_Mixer
-    Mix_CloseAudio();
+    Mix_Quit();
 
     // Shutdown SDL
     SDL_Quit();

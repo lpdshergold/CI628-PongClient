@@ -1,6 +1,8 @@
 #include <string>
 #include "MyGame.h"
 
+#include "SDL_image.h"
+
 using namespace std;
 
 // Player constructor
@@ -54,7 +56,7 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
 
     // check for SCORES from the server
     if (cmd == "SCORES") {
-        MyGame::playSound(goal_path);
+        MyGame::playSound(GOAL_PATH);
         // should get two arguments
         if (args.size() == 2) {
 
@@ -67,11 +69,11 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
     // check to see if the ball hit one of the bats
     if (cmd == "BALL_HIT_BAT1") {
 
-        MyGame::playSound(bat_hit_path);
+        MyGame::playSound(BAT_HIT_PATH);
 
     } else if (cmd == "BALL_HIT_BAT2") {
 
-        MyGame::playSound(bat_hit_path);
+        MyGame::playSound(BAT_HIT_PATH);
 
     }
 }
@@ -109,6 +111,22 @@ void MyGame::update() {
 }
 
 void MyGame::render(SDL_Renderer* renderer) {
+
+    // put this elsewhere and call it in render() =================================
+    SDL_Surface* background = IMG_Load(FOOTBALL_FIELD_PATH);
+    if (background != nullptr) {
+        cout << "Loaded!" << endl;
+    } else {
+        cout << "Not loaded!" << endl;
+    }
+
+    SDL_Rect dst = { 0, 0, 800, 600 };
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, background);
+
+    SDL_RenderCopy(renderer, texture, NULL, &dst);
+    // ===========================================================================
+
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawRect(renderer, &playerOne.bat);
     SDL_RenderDrawRect(renderer, &playerTwo.bat);
