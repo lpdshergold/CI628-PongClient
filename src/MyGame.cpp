@@ -5,6 +5,7 @@
 
 using namespace std;
 
+// Player Class ====================================================
 // Player constructor
 Player::Player(int x, int y, int width, int height) {
     X = x; 
@@ -24,6 +25,79 @@ void Player::setY(int yPos) {
 void Player::getBat() {
     bat = { X,Y,Width,Height };
 }
+
+// call to update yPos and get the bat x, y, height and width
+void Player::updateBat(int yPos) {
+    setY(yPos);
+    getBat();
+}
+
+// render the bat
+void Player::drawBat(SDL_Renderer* renderer) {
+    SDL_RenderDrawRect(renderer, &bat);
+}
+// ==================================================================
+
+// Ball Class =======================================================
+// ball constructor
+Ball::Ball(int x, int y, int width, int height) {
+    xPos = x;
+    yPos = y;
+    bWidth = width;
+    bHeight = height;
+
+    ball = { xPos, yPos, bWidth, bHeight };
+}
+
+// set the balls yPos
+void Ball::setY(int y) {
+    yPos = y;
+}
+
+// set the balls xPos
+void Ball::setX(int x) {
+    xPos = x;
+}
+
+// get the balls x, y, width and height
+void Ball::getBall() {
+    ball = { xPos, yPos, bWidth, bHeight };
+}
+
+// used to update pos and call setters
+void Ball::updateBall(int xPos, int yPos) {
+    setX(xPos);
+    setY(yPos);
+    getBall();
+}
+
+// call to render the ball on screen 
+void Ball::drawBall(SDL_Renderer* ren) {
+    SDL_RenderDrawRect(ren, &ball);
+}
+// ==================================================================
+
+
+// Image Class =======================================================
+// Image Constructor
+Image::Image(int x, int y, int width, int height, const char* path = "") {
+    rectDestination = {x, y, width, height};
+
+    sprite = IMG_Load(path);
+    if (sprite == nullptr) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+    }
+}
+
+void Image::render(SDL_Renderer* renderer) {
+    sTexture = SDL_CreateTextureFromSurface(renderer, sprite);
+
+    SDL_RenderCopy(renderer, sTexture, NULL, &rectDestination);
+
+    SDL_DestroyTexture(sTexture);
+    sTexture = nullptr;
+}
+// ===================================================================
 
 // sound effect function (if music is needed, make playMusic())
 Mix_Chunk MyGame::playSound(const char* path = "") {
@@ -56,10 +130,10 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
 
     // check for SCORES from the server
     if (cmd == "SCORES") {
-        MyGame::playSound(GOAL_PATH);
+        playSound(GOAL_PATH); // play goal sound
+
         // should get two arguments
         if (args.size() == 2) {
-
             // store server score
             game_data.playerOneScore = stoi(args.at(0));
             game_data.playerTwoScore = stoi(args.at(1));
@@ -68,13 +142,9 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
 
     // check to see if the ball hit one of the bats
     if (cmd == "BALL_HIT_BAT1") {
-
-        MyGame::playSound(BAT_HIT_PATH);
-
+        playSound(BAT_HIT_PATH); // play hitting bat sound
     } else if (cmd == "BALL_HIT_BAT2") {
-
-        MyGame::playSound(BAT_HIT_PATH);
-
+        playSound(BAT_HIT_PATH); // play hitting bat sound
     }
 }
 
@@ -102,33 +172,15 @@ void MyGame::input(SDL_Event& event) {
 }
 
 void MyGame::update() {
-    playerOne.setY(game_data.player1Y);
-    playerOne.getBat();
-    playerTwo.setY(game_data.player2Y);
-    playerTwo.getBat();
-    ball.y = game_data.ballY;
-    ball.x = game_data.ballX;
+    playerOne.updateBat(game_data.player1Y);
+    playerTwo.updateBat(game_data.player2Y);
+    ball.updateBall(game_data.ballX, game_data.ballY);
 }
 
 void MyGame::render(SDL_Renderer* renderer) {
-
-    // put this elsewhere and call it in render() =================================
-    SDL_Surface* background = IMG_Load(FOOTBALL_FIELD_PATH);
-    if (background != nullptr) {
-        cout << "Loaded!" << endl;
-    } else {
-        cout << "Not loaded!" << endl;
-    }
-
-    SDL_Rect dst = { 0, 0, 800, 600 };
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, background);
-
-    SDL_RenderCopy(renderer, texture, NULL, &dst);
-    // ===========================================================================
-
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawRect(renderer, &playerOne.bat);
-    SDL_RenderDrawRect(renderer, &playerTwo.bat);
-    SDL_RenderDrawRect(renderer, &ball);
+    background.render(renderer);
+    playerOne.drawBat(renderer);
+    playerTwo.drawBat(renderer);
+    ball.drawBall(renderer);
 }

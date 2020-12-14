@@ -144,6 +144,26 @@ int run_game() {
     return 0;
 }
 
+// clean up and destroy everything when closing game
+void endGameCleanUp(TCPsocket socket) {
+    delete game;
+
+    // Close connection to the server
+    SDLNet_TCP_Close(socket);
+
+    // Shutdown SDL_net
+    SDLNet_Quit();
+
+    // Shutdown TTF
+    TTF_Quit();
+
+    // Shutdown SDL_Mixer
+    Mix_Quit();
+
+    // Shutdown SDL
+    SDL_Quit();
+}
+
 int main(int argc, char** argv) {
 
     // Initialize SDL
@@ -158,14 +178,7 @@ int main(int argc, char** argv) {
         exit(2);
     }
 
-    // Initialize SDL_INIT_AUDIO
-    // Audio exits will be numbered in the 10s
-    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-        printf("SDL_INIT_AUDIO: %s\n", SDL_GetError());
-        exit(10);
-    }
-
-    // Initialize SLD_Mixer
+    // Initialize SDL_Mixer
     if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) < 0) {
         printf("SDL_Mixer: %s\n", Mix_GetError());
         exit(11);
@@ -198,22 +211,7 @@ int main(int argc, char** argv) {
 
     run_game();
 
-    delete game;
-
-    // Close connection to the server
-    SDLNet_TCP_Close(socket);
-
-    // Shutdown SDL_net
-    SDLNet_Quit();
-
-    // Shutdown TTF
-    TTF_Quit();
-
-    // Shutdown SDL_Mixer
-    Mix_Quit();
-
-    // Shutdown SDL
-    SDL_Quit();
+    endGameCleanUp(socket);
 
     return 0;
 }
