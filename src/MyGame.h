@@ -90,6 +90,9 @@ class MyGame {
 
         // image paths
         const char* FOOTBALL_FIELD_PATH = "res/images/football_field.png";
+        const char* FOOTBALL_PATH = "/res/images/football.png";
+        const char* PLAYER_ONE_PATH = "/res/images/playerOne.png";
+        const char* PLAYER_Two_PATH = "/res/images/playerTwo.png";
 
         // font path
         const char* ARIAL_FONT_PATH = "res/fonts/arial.ttf";
