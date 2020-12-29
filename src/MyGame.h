@@ -25,7 +25,13 @@ static struct GameData {
 class Player {
     private:
         int X = 0, Y = 0, Width = 0, Height = 0;
-        SDL_Rect bat = {};
+        //SDL_Rect bat = {};
+
+
+        // TEMP 
+        SDL_Surface* sprite = nullptr;
+        SDL_Rect rectDestination;
+        SDL_Texture* sTexture = nullptr;
 
         // set y position of the bat instance
         void setY(int yPos);
@@ -34,11 +40,13 @@ class Player {
 
     public:
         // player constructor
-        Player(int x, int y, int width, int height);
+        Player(int x, int y, int width, int height, const char* path);
         // update the bat y position and get the bats position
         void updateBat(int yPos);
-        // draw the bat on screen
-        void drawBat(SDL_Renderer* renderer);
+
+
+        // TEMP 
+        void render(SDL_Renderer* renderer);
 };
 
 // class for the ball
@@ -47,13 +55,20 @@ class Ball {
         int xPos = 0, yPos = 0, bWidth = 0, bHeight = 0; 
         SDL_Rect ball = {};
 
+        // TEMP 
+        SDL_Surface* sprite = nullptr;
+        SDL_Rect rectDestination;
+        SDL_Texture* sTexture = nullptr;
+
         void setY(int yPos);
         void setX(int xPos);
         void getBall();
     public:
-        Ball(int x, int y, int width, int height);
+        Ball(int x, int y, int width, int height, const char* path);
         void updateBall(int y, int x);
-        void drawBall(SDL_Renderer* ren);
+
+        // TEMP 
+        void render(SDL_Renderer* renderer);
 };
 
 // class for audio
@@ -90,19 +105,19 @@ class MyGame {
 
         // image paths
         const char* FOOTBALL_FIELD_PATH = "res/images/football_field.png";
-        const char* FOOTBALL_PATH = "/res/images/football.png";
-        const char* PLAYER_ONE_PATH = "/res/images/playerOne.png";
-        const char* PLAYER_Two_PATH = "/res/images/playerTwo.png";
+        const char* FOOTBALL_PATH = "res/images/football.png";
+        const char* PLAYER_ONE_PATH = "res/images/playerOne.png";
+        const char* PLAYER_TWO_PATH = "res/images/playerTwo.png";
 
         // font path
         const char* ARIAL_FONT_PATH = "res/fonts/arial.ttf";
 
         // player 1 and 2
-        Player playerOne{ 200, 0, 25, 75 };
-        Player playerTwo{ 600, 0, 25, 75 };
+        Player playerOne{ 200, game_data.player1Y, 25, 75, PLAYER_ONE_PATH };
+        Player playerTwo{ 600, game_data.player2Y, 25, 75, PLAYER_TWO_PATH };
 
         // ball instance
-        Ball ball{ 0, 0, 30, 30 };
+        Ball ball{ game_data.ballX, game_data.ballY, 30, 30, FOOTBALL_PATH };
 
         Image background{ 0, 0, 800, 600, FOOTBALL_FIELD_PATH };
 

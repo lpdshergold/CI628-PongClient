@@ -7,13 +7,27 @@ using namespace std;
 
 // Player Class ====================================================
 // Player constructor
-Player::Player(int x, int y, int width, int height) {
+Player::Player(int x, int y, int width, int height, const char* path) {
     X = x; 
     Y = y;
     Width = width;
     Height = height;
 
-    bat = { X,Y,Width,Height };
+    rectDestination = { X,Y,Width,Height };
+
+    sprite = IMG_Load(path);
+    if (sprite == nullptr) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+    }
+}
+
+void Player::render(SDL_Renderer* renderer) {
+    sTexture = SDL_CreateTextureFromSurface(renderer, sprite);
+
+    SDL_RenderCopy(renderer, sTexture, NULL, &rectDestination);
+
+    SDL_DestroyTexture(sTexture);
+    sTexture = nullptr;
 }
 
 // Set the y position of the player
@@ -23,7 +37,7 @@ void Player::setY(int yPos) {
 
 // Get the bat position
 void Player::getBat() {
-    bat = { X,Y,Width,Height };
+    rectDestination = { X,Y,Width,Height };
 }
 
 // call to update yPos and get the bat x, y, height and width
@@ -31,22 +45,31 @@ void Player::updateBat(int yPos) {
     setY(yPos);
     getBat();
 }
-
-// render the bat
-void Player::drawBat(SDL_Renderer* renderer) {
-    SDL_RenderDrawRect(renderer, &bat);
-}
 // ==================================================================
 
 // Ball Class =======================================================
 // ball constructor
-Ball::Ball(int x, int y, int width, int height) {
+Ball::Ball(int x, int y, int width, int height, const char* path) {
     xPos = x;
     yPos = y;
     bWidth = width;
     bHeight = height;
 
-    ball = { xPos, yPos, bWidth, bHeight };
+    rectDestination = { xPos, yPos, bWidth, bHeight };
+
+    sprite = IMG_Load(path);
+    if (sprite == nullptr) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+    }
+}
+
+void Ball::render(SDL_Renderer* renderer) {
+    sTexture = SDL_CreateTextureFromSurface(renderer, sprite);
+
+    SDL_RenderCopy(renderer, sTexture, NULL, &rectDestination);
+
+    SDL_DestroyTexture(sTexture);
+    sTexture = nullptr;
 }
 
 // set the balls yPos
@@ -61,7 +84,7 @@ void Ball::setX(int x) {
 
 // get the balls x, y, width and height
 void Ball::getBall() {
-    ball = { xPos, yPos, bWidth, bHeight };
+    rectDestination = { xPos, yPos, bWidth, bHeight };
 }
 
 // used to update pos and call setters
@@ -69,11 +92,6 @@ void Ball::updateBall(int xPos, int yPos) {
     setX(xPos);
     setY(yPos);
     getBall();
-}
-
-// call to render the ball on screen 
-void Ball::drawBall(SDL_Renderer* ren) {
-    SDL_RenderDrawRect(ren, &ball);
 }
 // ==================================================================
 
@@ -179,8 +197,16 @@ void MyGame::update() {
 
 void MyGame::render(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+    // render the background image first
     background.render(renderer);
-    playerOne.drawBat(renderer);
-    playerTwo.drawBat(renderer);
-    ball.drawBall(renderer);
+
+    // render player1 onscreen
+    playerOne.render(renderer);
+
+    // render player2 onscreen
+    playerTwo.render(renderer);
+    
+    // render the ball onscreen
+    ball.render(renderer);
 }
