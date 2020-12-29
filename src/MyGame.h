@@ -78,9 +78,15 @@ class Audio {
 };
 
 // class for fonts
-class Font {
+class GameFont {
     private:
+        int playerScore = 0;
+        string playerScoreText;
     public:
+        GameFont(const char* fontPath, int score, SDL_Color color, int fontSize);
+        int setScore(int score);
+        void getScore();
+        void renderText(SDL_Renderer render);
 };
 
 // class for images
@@ -119,6 +125,11 @@ class MyGame {
         // ball instance
         Ball ball{ game_data.ballX, game_data.ballY, 30, 30, FOOTBALL_PATH };
 
+        // player scores
+        GameFont firstPlayerScore;
+        GameFont secondPlayerScore;
+
+        // background image
         Image background{ 0, 0, 800, 600, FOOTBALL_FIELD_PATH };
 
     public:

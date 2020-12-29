@@ -200,6 +200,36 @@ void MyGame::render(SDL_Renderer* renderer) {
 
     // render the background image first
     background.render(renderer);
+    TTF_Font* fontAriel = TTF_OpenFont("res/fonts/arial.ttf", 24);
+
+    if (fontAriel == nullptr) {
+        printf("TTF_Font: %s\n", TTF_GetError());
+    }
+
+    int playerScore = game_data.playerOneScore;
+    std::string score_text = std::to_string(playerScore);
+
+    SDL_Color color = { 0, 0, 0, 255 };
+    SDL_Surface* text_surface = TTF_RenderText_Blended(fontAriel, score_text.c_str(), color);
+
+    // clear font memory
+    TTF_CloseFont(fontAriel);
+
+    if (text_surface != nullptr) {
+        SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+
+        SDL_FreeSurface(text_surface);
+        if (text_texture != nullptr) {
+            int w, h;
+            SDL_QueryTexture(text_texture, NULL, NULL, &w, &h);
+            SDL_Rect dst = {100,100, w, h};
+
+            // NULL to draw entire texture
+            SDL_RenderCopy(renderer, text_texture, NULL, &dst);
+
+            SDL_DestroyTexture(text_texture);
+        }
+    }
 
     // render player1 onscreen
     playerOne.render(renderer);

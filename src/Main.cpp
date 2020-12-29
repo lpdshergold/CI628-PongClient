@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
     }
     
     // Initialize TTF
-    if (TTF_Init < 0) {
+    if (TTF_Init() < 0) {
         printf("TTF_Init: %s\n", TTF_GetError());
         exit(21);
     }
