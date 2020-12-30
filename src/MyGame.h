@@ -25,8 +25,6 @@ static struct GameData {
 class Player {
     private:
         int X = 0, Y = 0, Width = 0, Height = 0;
-        //SDL_Rect bat = {};
-
 
         // TEMP 
         SDL_Surface* sprite = nullptr;
@@ -71,22 +69,21 @@ class Ball {
         void render(SDL_Renderer* renderer);
 };
 
-// class for audio
-class Audio {
-    private:
-    public:
-};
-
 // class for fonts
 class GameFont {
     private:
         int playerScore = 0;
-        string playerScoreText;
+        std::string playerScoreText;
+
+        const char* textPath;
+        int textSize, xPos, yPos;
+        SDL_Color textColor;
+
     public:
-        GameFont(const char* fontPath, int score, SDL_Color color, int fontSize);
-        int setScore(int score);
-        void getScore();
-        void renderText(SDL_Renderer render);
+        GameFont(const char* fontPath, int fontSize, SDL_Color color, int xPos, int yPos);
+        void setScore(int score);
+        SDL_Surface* getFontSurface();
+        void renderText(SDL_Renderer* render);
 };
 
 // class for images
@@ -116,7 +113,7 @@ class MyGame {
         const char* PLAYER_TWO_PATH = "res/images/playerTwo.png";
 
         // font path
-        const char* ARIAL_FONT_PATH = "res/fonts/arial.ttf";
+        const char* FFF_FONT_PATH = "res/fonts/FFF_Tusj.ttf";
 
         // player 1 and 2
         Player playerOne{ 200, game_data.player1Y, 25, 75, PLAYER_ONE_PATH };
@@ -126,13 +123,18 @@ class MyGame {
         Ball ball{ game_data.ballX, game_data.ballY, 30, 30, FOOTBALL_PATH };
 
         // player scores
-        GameFont firstPlayerScore;
-        GameFont secondPlayerScore;
+        SDL_Color color = { 0,0,0,255 };
+        const int FONT_SIZE = 50;
+
+        GameFont firstPlayerScore{ FFF_FONT_PATH, FONT_SIZE, color, 175, 75 };
+        GameFont secondPlayerScore{ FFF_FONT_PATH, FONT_SIZE, color, 575, 75 };
 
         // background image
         Image background{ 0, 0, 800, 600, FOOTBALL_FIELD_PATH };
 
     public:
+        MyGame();
+
         std::vector<std::string> messages;
 
         Mix_Chunk playSound(const char* path);

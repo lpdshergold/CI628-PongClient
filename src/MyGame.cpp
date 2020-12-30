@@ -1,21 +1,19 @@
 #include <string>
 #include "MyGame.h"
 
-#include "SDL_image.h"
-
 using namespace std;
 
 // Player Class ====================================================
 // Player constructor
 Player::Player(int x, int y, int width, int height, const char* path) {
-    X = x; 
-    Y = y;
-    Width = width;
-    Height = height;
+    this->X = x;
+    this->Y = y;
+    this->Width = width;
+    this->Height = height;
 
-    rectDestination = { X,Y,Width,Height };
+    this->rectDestination = { X,Y,Width,Height };
 
-    sprite = IMG_Load(path);
+    this->sprite = IMG_Load(path);
     if (sprite == nullptr) {
         printf("IMG_Load: %s\n", IMG_GetError());
     }
@@ -50,14 +48,14 @@ void Player::updateBat(int yPos) {
 // Ball Class =======================================================
 // ball constructor
 Ball::Ball(int x, int y, int width, int height, const char* path) {
-    xPos = x;
-    yPos = y;
-    bWidth = width;
-    bHeight = height;
+    this->xPos = x;
+    this->yPos = y;
+    this->bWidth = width;
+    this->bHeight = height;
 
-    rectDestination = { xPos, yPos, bWidth, bHeight };
+    this->rectDestination = { xPos, yPos, bWidth, bHeight };
 
-    sprite = IMG_Load(path);
+    this->sprite = IMG_Load(path);
     if (sprite == nullptr) {
         printf("IMG_Load: %s\n", IMG_GetError());
     }
@@ -95,18 +93,92 @@ void Ball::updateBall(int xPos, int yPos) {
 }
 // ==================================================================
 
+// GameFont Class =======================================================
+// GameFont constructor
+GameFont::GameFont(const char* fontPath, int fontSize, SDL_Color color, int x, int y) {
+    this->textPath = fontPath;
+    this->textSize = fontSize;
+    this->textColor = color;
+    this->xPos = x;
+    this->yPos = y;
+}
+
+// set the score of the player
+void GameFont::setScore(int score) {
+    playerScore = score;
+    playerScoreText = std::to_string(playerScore);
+}
+
+// function to get the font surface
+SDL_Surface* GameFont::getFontSurface() {
+    TTF_Font* textFont = TTF_OpenFont(textPath, textSize);
+
+    if (textFont == nullptr) {
+        printf("TTF_Font: %s\n", TTF_GetError());
+    }
+
+    std::string playerScoreText = std::to_string(playerScore);
+
+    SDL_Color fontColor = textColor;
+
+    SDL_Surface* tempSurface = TTF_RenderText_Blended(textFont, playerScoreText.c_str(), fontColor);
+
+    // clear font from memory
+    TTF_CloseFont(textFont);
+    textFont = nullptr;
+
+    // return a surface to where this function is called
+    return tempSurface;
+}
+
+// render function to show font on screen
+void GameFont::renderText(SDL_Renderer* render) {
+    // retrieve the font surface
+    SDL_Surface* textSurface = getFontSurface();
+
+    if (textSurface != nullptr) {
+        // create texture from existing textSurface
+        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(render, textSurface);
+
+        // free surface from memory
+        SDL_FreeSurface(textSurface);
+        textSurface = nullptr;
+
+        // check if nullptr
+        if (textTexture != nullptr) {
+            int width, height;
+            // querying texture for the width and height for font
+            SDL_QueryTexture(textTexture, NULL, NULL, &width, &height);
+
+            SDL_Rect fontPos = { xPos, yPos, width, height };
+
+            // render texture onto screen
+            SDL_RenderCopy(render, textTexture, NULL, &fontPos);
+
+            // destroy the texture in memory and give textTexture a nullptr
+            SDL_DestroyTexture(textTexture);
+            textTexture = nullptr;
+        } else {
+            printf("SDL_Texture: renderText error");
+        }
+    } else {
+        printf("SDL_Surface: renderText error");
+    }
+}
+// ==================================================================
 
 // Image Class =======================================================
 // Image Constructor
 Image::Image(int x, int y, int width, int height, const char* path = "") {
-    rectDestination = {x, y, width, height};
+    this->rectDestination = {x, y, width, height};
 
-    sprite = IMG_Load(path);
+    this->sprite = IMG_Load(path);
     if (sprite == nullptr) {
         printf("IMG_Load: %s\n", IMG_GetError());
     }
 }
 
+// render image
 void Image::render(SDL_Renderer* renderer) {
     sTexture = SDL_CreateTextureFromSurface(renderer, sprite);
 
@@ -131,6 +203,8 @@ Mix_Chunk MyGame::playSound(const char* path = "") {
     // Play sound
     Mix_PlayChannel(-1, sound, 0);
 }
+
+MyGame::MyGame() {}
 
 // recieve data from server
 void MyGame::on_receive(string cmd, vector<string>& args) {
@@ -193,6 +267,8 @@ void MyGame::update() {
     playerOne.updateBat(game_data.player1Y);
     playerTwo.updateBat(game_data.player2Y);
     ball.updateBall(game_data.ballX, game_data.ballY);
+    firstPlayerScore.setScore(game_data.playerOneScore);
+    secondPlayerScore.setScore(game_data.playerTwoScore);
 }
 
 void MyGame::render(SDL_Renderer* renderer) {
@@ -200,36 +276,12 @@ void MyGame::render(SDL_Renderer* renderer) {
 
     // render the background image first
     background.render(renderer);
-    TTF_Font* fontAriel = TTF_OpenFont("res/fonts/arial.ttf", 24);
 
-    if (fontAriel == nullptr) {
-        printf("TTF_Font: %s\n", TTF_GetError());
-    }
+    // render player one score to screen
+    firstPlayerScore.renderText(renderer);
 
-    int playerScore = game_data.playerOneScore;
-    std::string score_text = std::to_string(playerScore);
-
-    SDL_Color color = { 0, 0, 0, 255 };
-    SDL_Surface* text_surface = TTF_RenderText_Blended(fontAriel, score_text.c_str(), color);
-
-    // clear font memory
-    TTF_CloseFont(fontAriel);
-
-    if (text_surface != nullptr) {
-        SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-
-        SDL_FreeSurface(text_surface);
-        if (text_texture != nullptr) {
-            int w, h;
-            SDL_QueryTexture(text_texture, NULL, NULL, &w, &h);
-            SDL_Rect dst = {100,100, w, h};
-
-            // NULL to draw entire texture
-            SDL_RenderCopy(renderer, text_texture, NULL, &dst);
-
-            SDL_DestroyTexture(text_texture);
-        }
-    }
+    // render player two score to screen
+    secondPlayerScore.renderText(renderer);
 
     // render player1 onscreen
     playerOne.render(renderer);
