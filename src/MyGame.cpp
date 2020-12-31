@@ -3,29 +3,23 @@
 
 using namespace std;
 
-// Player Class ====================================================
+
+
 // Player constructor
 Player::Player(int x, int y, int width, int height, const char* path) {
     this->X = x;
     this->Y = y;
     this->Width = width;
     this->Height = height;
-
+    this->pPath = path;
+    
     this->rectDestination = { X,Y,Width,Height };
-
-    this->sprite = IMG_Load(path);
-    if (sprite == nullptr) {
-        printf("IMG_Load: %s\n", IMG_GetError());
-    }
 }
 
+// render the player to the screen
 void Player::render(SDL_Renderer* renderer) {
-    sTexture = SDL_CreateTextureFromSurface(renderer, sprite);
-
-    SDL_RenderCopy(renderer, sTexture, NULL, &rectDestination);
-
-    SDL_DestroyTexture(sTexture);
-    sTexture = nullptr;
+    Image playerImage{ X, Y, Width, Height, pPath };
+    playerImage.render(renderer);
 }
 
 // Set the y position of the player
@@ -43,31 +37,23 @@ void Player::updateBat(int yPos) {
     setY(yPos);
     getBat();
 }
-// ==================================================================
 
-// Ball Class =======================================================
+
+
 // ball constructor
 Ball::Ball(int x, int y, int width, int height, const char* path) {
     this->xPos = x;
     this->yPos = y;
     this->bWidth = width;
     this->bHeight = height;
+    this->pPath = path;
 
     this->rectDestination = { xPos, yPos, bWidth, bHeight };
-
-    this->sprite = IMG_Load(path);
-    if (sprite == nullptr) {
-        printf("IMG_Load: %s\n", IMG_GetError());
-    }
 }
 
 void Ball::render(SDL_Renderer* renderer) {
-    sTexture = SDL_CreateTextureFromSurface(renderer, sprite);
-
-    SDL_RenderCopy(renderer, sTexture, NULL, &rectDestination);
-
-    SDL_DestroyTexture(sTexture);
-    sTexture = nullptr;
+    Image ball{ xPos, yPos, bWidth, bHeight, pPath };
+    ball.render(renderer);
 }
 
 // set the balls yPos
@@ -91,9 +77,9 @@ void Ball::updateBall(int xPos, int yPos) {
     setY(yPos);
     getBall();
 }
-// ==================================================================
 
-// GameFont Class =======================================================
+
+
 // GameFont constructor
 GameFont::GameFont(const char* fontPath, int fontSize, SDL_Color color, int x, int y) {
     this->textPath = fontPath;
@@ -165,29 +151,39 @@ void GameFont::renderText(SDL_Renderer* render) {
         printf("SDL_Surface: renderText error");
     }
 }
-// ==================================================================
 
-// Image Class =======================================================
+
+
 // Image Constructor
-Image::Image(int x, int y, int width, int height, const char* path = "") {
+Image::Image(int x, int y, int width, int height, const char* path = nullptr) {
+    this->sWidth = width;
+    this->sHeight = height;
+    this->pPath = path;
     this->rectDestination = {x, y, width, height};
-
-    this->sprite = IMG_Load(path);
-    if (sprite == nullptr) {
-        printf("IMG_Load: %s\n", IMG_GetError());
-    }
 }
 
 // render image
 void Image::render(SDL_Renderer* renderer) {
-    sTexture = SDL_CreateTextureFromSurface(renderer, sprite);
+    this->sprite = IMG_Load(pPath);
+    if (sprite == nullptr) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+    }
 
-    SDL_RenderCopy(renderer, sTexture, NULL, &rectDestination);
+    if (sprite != nullptr) {
+        sTexture = SDL_CreateTextureFromSurface(renderer, sprite);
 
-    SDL_DestroyTexture(sTexture);
-    sTexture = nullptr;
+        SDL_FreeSurface(sprite);
+        sprite = nullptr;
+        if (sTexture != nullptr) {
+            SDL_RenderCopy(renderer, sTexture, NULL, &rectDestination);
+
+            SDL_DestroyTexture(sTexture);
+            sTexture = nullptr;
+        }
+    }
 }
-// ===================================================================
+
+
 
 // sound effect function (if music is needed, make playMusic())
 Mix_Chunk MyGame::playSound(const char* path = "") {
@@ -203,6 +199,7 @@ Mix_Chunk MyGame::playSound(const char* path = "") {
     // Play sound
     Mix_PlayChannel(-1, sound, 0);
 }
+
 
 MyGame::MyGame() {}
 

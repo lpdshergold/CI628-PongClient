@@ -25,11 +25,9 @@ static struct GameData {
 class Player {
     private:
         int X = 0, Y = 0, Width = 0, Height = 0;
+        const char* pPath;
 
-        // TEMP 
-        SDL_Surface* sprite = nullptr;
         SDL_Rect rectDestination;
-        SDL_Texture* sTexture = nullptr;
 
         // set y position of the bat instance
         void setY(int yPos);
@@ -42,8 +40,6 @@ class Player {
         // update the bat y position and get the bats position
         void updateBat(int yPos);
 
-
-        // TEMP 
         void render(SDL_Renderer* renderer);
 };
 
@@ -51,12 +47,9 @@ class Player {
 class Ball {
     private:
         int xPos = 0, yPos = 0, bWidth = 0, bHeight = 0; 
-        SDL_Rect ball = {};
+        const char* pPath;
 
-        // TEMP 
-        SDL_Surface* sprite = nullptr;
         SDL_Rect rectDestination;
-        SDL_Texture* sTexture = nullptr;
 
         void setY(int yPos);
         void setX(int xPos);
@@ -93,8 +86,8 @@ class Image {
         SDL_Rect rectDestination;
         SDL_Texture* sTexture = nullptr;
 
-        // int xPos, yPos, sWidth, sHeight;
-        // const char* sPath;
+        int sWidth, sHeight;
+        const char* pPath;
     public:
         Image(int x, int y, int width, int height, const char* path);
         void render(SDL_Renderer* renderer);
