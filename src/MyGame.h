@@ -93,6 +93,20 @@ class Image {
         void render(SDL_Renderer* renderer);
 };
 
+class Particle {
+    private:
+
+    public:
+    double x, y;
+    int size;
+    double life;
+    double vel_x, vel_y;
+
+    SDL_Color color;
+
+    Particle(double xPos, double yPos, double velXPos, double velYPos, int pSize, double pLife, SDL_Color pColor);
+};
+
 class MyGame {
     private:
         // sound effect paths
@@ -109,21 +123,23 @@ class MyGame {
         const char* FFF_FONT_PATH = "res/fonts/FFF_Tusj.ttf";
 
         // player 1 and 2
-        Player playerOne{ 200, game_data.player1Y, 25, 75, PLAYER_ONE_PATH };
-        Player playerTwo{ 600, game_data.player2Y, 25, 75, PLAYER_TWO_PATH };
+        Player* playerOne = new Player( 200, game_data.player1Y, 25, 75, PLAYER_ONE_PATH );
+        Player* playerTwo = new Player( 600, game_data.player2Y, 25, 75, PLAYER_TWO_PATH );
 
         // ball instance
-        Ball ball{ game_data.ballX, game_data.ballY, 30, 30, FOOTBALL_PATH };
+        Ball* ball = new Ball( game_data.ballX, game_data.ballY, 30, 30, FOOTBALL_PATH );
 
         // player scores
         SDL_Color color = { 0,0,0,255 };
         const int FONT_SIZE = 50;
 
-        GameFont firstPlayerScore{ FFF_FONT_PATH, FONT_SIZE, color, 175, 75 };
-        GameFont secondPlayerScore{ FFF_FONT_PATH, FONT_SIZE, color, 575, 75 };
+        GameFont* firstPlayerScore = new GameFont( FFF_FONT_PATH, FONT_SIZE, color, 175, 75 );
+        GameFont* secondPlayerScore = new GameFont( FFF_FONT_PATH, FONT_SIZE, color, 575, 75 );
 
         // background image
-        Image background{ 0, 0, 800, 600, FOOTBALL_FIELD_PATH };
+        Image* background = new Image( 0, 0, 800, 600, FOOTBALL_FIELD_PATH );
+
+        std::vector<Particle*> particles;
 
     public:
         MyGame();
@@ -137,5 +153,10 @@ class MyGame {
         void input(SDL_Event& event);
         void update();
         void render(SDL_Renderer* renderer);
+        void checkAllParticles(SDL_Renderer* renderer); 
+        void particleVelAndLife(float reduceParticleLife);
+        void particlesFollowBall(int ballXPos, int ballYPos);
+        void particleCelebrationAfterGoal(int ballXPos, int ballYPos, bool leftGoal);
+        double getRandomNumber();
 };
 #endif

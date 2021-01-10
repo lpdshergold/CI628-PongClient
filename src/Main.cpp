@@ -72,7 +72,7 @@ static int on_send(void* socket_ptr) {
             cout << "Sending_TCP: " << message << endl;
 
             SDLNet_TCP_Send(socket, message.c_str(), message.length());
-        }
+        }   
 
         SDL_Delay(1);
     }
@@ -81,7 +81,7 @@ static int on_send(void* socket_ptr) {
 }
 
 // game loop
-void loop(SDL_Renderer* renderer) {
+void loop(SDL_Renderer* renderer, SDL_Renderer* secondRenderer) {
     SDL_Event event;
 
     while (is_running) {
@@ -106,13 +106,17 @@ void loop(SDL_Renderer* renderer) {
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(secondRenderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
+        SDL_RenderClear(secondRenderer);
 
         game->update();
 
         game->render(renderer);
+        game->render(secondRenderer);
 
         SDL_RenderPresent(renderer);
+        SDL_RenderPresent(secondRenderer);
 
         SDL_Delay(17);
     }
@@ -120,26 +124,34 @@ void loop(SDL_Renderer* renderer) {
 
 // initialising window and game renderer
 int run_game() {
+
     SDL_Window* window = SDL_CreateWindow(
-        "Multiplayer Pong Client",
+        "Multiplayer Pong Client One",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        800, 600,
+        SDL_WINDOW_SHOWN
+    );
+    SDL_Window* windowTwo = SDL_CreateWindow(
+        "Multiplayer Pong Client Two",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         800, 600,
         SDL_WINDOW_SHOWN
     );
 
-    if (window == nullptr) {
+    if (window == nullptr && windowTwo == nullptr) {
         std::cout << "Failed to create window" << SDL_GetError() << std::endl;
         return -1;
     }
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer* rendererTwo = SDL_CreateRenderer(windowTwo, -1, SDL_RENDERER_ACCELERATED);
 
-    if (renderer == nullptr) {
+    if (renderer == nullptr && rendererTwo == nullptr) {
         std::cout << "Failed to create renderer" << SDL_GetError() << std::endl;
         return -1;
     }
 
-    loop(renderer);
+    loop(renderer, rendererTwo);
 
     return 0;
 }
@@ -165,7 +177,6 @@ void endGameCleanUp(TCPsocket socket) {
 }
 
 int main(int argc, char** argv) {
-
     // Initialize SDL
     if (SDL_Init(0) < 0) {
         printf("SDL_Init: %s\n", SDL_GetError());
@@ -183,7 +194,7 @@ int main(int argc, char** argv) {
         printf("SDL_Mixer: %s\n", Mix_GetError());
         exit(11);
     }
-    
+
     // Initialize TTF
     if (TTF_Init() < 0) {
         printf("TTF_Init: %s\n", TTF_GetError());

@@ -184,6 +184,16 @@ void Image::render(SDL_Renderer* renderer) {
 }
 
 
+Particle::Particle(double xPos, double yPos, double velXPos, double velYPos, int pSize, double pLife, SDL_Color pColor) {
+    this->x = xPos;
+    this->y = yPos;
+    this->vel_x = velXPos;
+    this->vel_y = velYPos;
+    this->size = pSize;
+    this->color = pColor;
+    this->life = pLife;
+}
+
 
 // sound effect function (if music is needed, make playMusic())
 Mix_Chunk MyGame::playSound(const char* path = "") {
@@ -229,6 +239,12 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
         }
     }
 
+    if (cmd == "HIT_WALL_LEFTGAME_DATA") {
+        particleCelebrationAfterGoal(game_data.ballX, game_data.ballY, true);
+    } else if (cmd == "HIT_WALL_RIGHTGAME_DATA") {
+        particleCelebrationAfterGoal(game_data.ballX, game_data.ballY, false);
+    }
+
     // check to see if the ball hit one of the bats
     if (cmd == "BALL_HIT_BAT1") {
         playSound(BAT_HIT_PATH); // play hitting bat sound
@@ -260,32 +276,105 @@ void MyGame::input(SDL_Event& event) {
     }
 }
 
-void MyGame::update() {
-    playerOne.updateBat(game_data.player1Y);
-    playerTwo.updateBat(game_data.player2Y);
-    ball.updateBall(game_data.ballX, game_data.ballY);
-    firstPlayerScore.setScore(game_data.playerOneScore);
-    secondPlayerScore.setScore(game_data.playerTwoScore);
+double MyGame::getRandomNumber() {
+    double random = rand() * 1.0 / RAND_MAX;
+    return random;
 }
 
+void MyGame::checkAllParticles(SDL_Renderer* renderer) {
+    for (auto particle : particles) {
+        SDL_Rect rect = { (int)particle->x, (int)particle->y, particle->size * 2, particle->size * 2 };
+
+        SDL_SetRenderDrawColor(renderer, particle->color.r, particle->color.g, particle->color.b, particle->color.a);
+
+        SDL_RenderFillRect(renderer, &rect);
+    }
+}
+
+void MyGame::particleVelAndLife(float reduceParticleLife) {
+    for (auto particle : particles) {
+        particle->x += particle->vel_x;
+        particle->y += particle->vel_y;
+        particle->life -= reduceParticleLife;
+
+        if (particle->life <= 0.0) {
+            particle->color.a = 0;
+        } else {
+            particle->color.a = (Uint8)((particle->life / 5.0) * 255);
+        }
+    }
+}
+
+void MyGame::particlesFollowBall(int ballXPos, int ballYPos) {
+    for (int numOfParticles = 0; numOfParticles < 5; numOfParticles++) {
+        double velX = -1 * getRandomNumber();
+        double velY = getRandomNumber() - 0.5;
+
+        SDL_Color color = { 255, 0, 0, 255 };
+
+        particles.push_back(new Particle(ballXPos + 10, ballYPos + 12, velX * 2, velY * 2, 4, 1.0, color));
+    }
+    particleVelAndLife(0.075);
+}
+
+void MyGame::particleCelebrationAfterGoal(int ballXPos, int ballYPos, bool leftGoal) {
+    for (int numOfParticles = 0; numOfParticles < 20; numOfParticles++) {
+        double velX, velY;
+        if (leftGoal) {
+            velX = 2.5 * getRandomNumber();
+            velY = 2.5 * getRandomNumber();
+        } else {
+            velX = -2.5 * getRandomNumber();
+            velY = -2.5 * getRandomNumber();
+        }
+
+        SDL_Color color = { 100, 100, 255, 255 };
+
+        particles.push_back(new Particle(ballXPos, ballYPos, velX * 2, velY * 2, 4, (1.0 * 2), color));
+    }
+    particleVelAndLife(0.050);
+}
+
+void MyGame::update() {
+    // update player positions
+    playerOne->updateBat(game_data.player1Y);
+    playerTwo->updateBat(game_data.player2Y);
+
+    // update ball position
+    ball->updateBall(game_data.ballX, game_data.ballY);
+
+    // update player scores
+    firstPlayerScore->setScore(game_data.playerOneScore);
+    secondPlayerScore->setScore(game_data.playerTwoScore);
+
+    // update particle position to follow ball
+    particlesFollowBall(game_data.ballX, game_data.ballY);
+}
+
+
 void MyGame::render(SDL_Renderer* renderer) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
+    
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
     // render the background image first
-    background.render(renderer);
+    background->render(renderer);
 
     // render player one score to screen
-    firstPlayerScore.renderText(renderer);
+    firstPlayerScore->renderText(renderer);
 
     // render player two score to screen
-    secondPlayerScore.renderText(renderer);
+    secondPlayerScore->renderText(renderer);
 
     // render player1 onscreen
-    playerOne.render(renderer);
+    playerOne->render(renderer);
 
     // render player2 onscreen
-    playerTwo.render(renderer);
-    
+    playerTwo->render(renderer);
+
+    // render out all particles
+    checkAllParticles(renderer);
+
     // render the ball onscreen
-    ball.render(renderer);
+    ball->render(renderer);
 }
