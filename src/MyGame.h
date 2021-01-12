@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <set>
 
 #include "SDL.h"
 #include "SDL_mixer.h"
@@ -97,30 +98,28 @@ class Particle {
     private:
 
     public:
-    double x, y;
+    double x, y, life, vel_x, vel_y;
     int size;
-    double life;
-    double vel_x, vel_y;
 
     SDL_Color color;
 
-    Particle(double xPos, double yPos, double velXPos, double velYPos, int pSize, double pLife, SDL_Color pColor);
+    Particle(double xPos, double yPos, double velXPos, double velYPos, double pLife, SDL_Color pColor);
 };
 
 class MyGame {
     private:
         // sound effect paths
-        const char* BAT_HIT_PATH = "res/sounds/bat_hit.wav";
-        const char* GOAL_PATH = "res/sounds/goal.wav";
+        const char* BAT_HIT_PATH = "../src/res/sounds/bat_hit.wav";
+        const char* GOAL_PATH = "../src/res/sounds/goal.wav";
 
         // image paths
-        const char* FOOTBALL_FIELD_PATH = "res/images/football_field.png";
-        const char* FOOTBALL_PATH = "res/images/football.png";
-        const char* PLAYER_ONE_PATH = "res/images/playerOne.png";
-        const char* PLAYER_TWO_PATH = "res/images/playerTwo.png";
+        const char* FOOTBALL_FIELD_PATH = "../src/res/images/football_field.png";
+        const char* FOOTBALL_PATH = "../src/res/images/football.png";
+        const char* PLAYER_ONE_PATH = "../src/res/images/playerOne.png";
+        const char* PLAYER_TWO_PATH = "../src/res/images/playerTwo.png";
 
         // font path
-        const char* FFF_FONT_PATH = "res/fonts/FFF_Tusj.ttf";
+        const char* FFF_FONT_PATH = "../src/res/fonts/FFF_Tusj.ttf";
 
         // player 1 and 2
         Player* playerOne = new Player( 200, game_data.player1Y, 25, 75, PLAYER_ONE_PATH );
@@ -139,7 +138,15 @@ class MyGame {
         // background image
         Image* background = new Image( 0, 0, 800, 600, FOOTBALL_FIELD_PATH );
 
-        std::vector<Particle*> particles;
+        std::set<Particle*> allParticles;
+
+        void checkAllParticles(SDL_Renderer* renderer);
+        void particleVel();
+        void particleLife(float reduceParticleLife);
+        void particlesFollowBall(int ballXPos, int ballYPos);
+        void particleCelebrationAfterGoal(int ballXPos, int ballYPos, bool leftGoal);
+        double getRandomNumber();
+        SDL_Color randomColorNumber();
 
     public:
         MyGame();
@@ -153,10 +160,5 @@ class MyGame {
         void input(SDL_Event& event);
         void update();
         void render(SDL_Renderer* renderer);
-        void checkAllParticles(SDL_Renderer* renderer); 
-        void particleVelAndLife(float reduceParticleLife);
-        void particlesFollowBall(int ballXPos, int ballYPos);
-        void particleCelebrationAfterGoal(int ballXPos, int ballYPos, bool leftGoal);
-        double getRandomNumber();
 };
 #endif

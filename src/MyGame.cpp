@@ -184,14 +184,14 @@ void Image::render(SDL_Renderer* renderer) {
 }
 
 
-Particle::Particle(double xPos, double yPos, double velXPos, double velYPos, int pSize, double pLife, SDL_Color pColor) {
+Particle::Particle(double xPos, double yPos, double velXPos, double velYPos, double pLife, SDL_Color pColor) {
     this->x = xPos;
     this->y = yPos;
     this->vel_x = velXPos;
     this->vel_y = velYPos;
-    this->size = pSize;
     this->color = pColor;
     this->life = pLife;
+    this->size = 4;
 }
 
 
@@ -281,9 +281,21 @@ double MyGame::getRandomNumber() {
     return random;
 }
 
+// get random color values
+SDL_Color MyGame::randomColorNumber() {
+    int random[3];
+    for (int &num : random) {
+        num = rand() * 255 + 1;
+    }
+
+    SDL_Color color = { random[0], random[1], random[2], random[3] };
+
+    return color;
+}
+
 void MyGame::checkAllParticles(SDL_Renderer* renderer) {
-    for (auto particle : particles) {
-        SDL_Rect rect = { (int)particle->x, (int)particle->y, particle->size * 2, particle->size * 2 };
+    for (Particle* particle : allParticles) {
+        SDL_Rect rect = { particle->x, particle->y, particle->size * 2, particle->size * 2 };
 
         SDL_SetRenderDrawColor(renderer, particle->color.r, particle->color.g, particle->color.b, particle->color.a);
 
@@ -291,34 +303,42 @@ void MyGame::checkAllParticles(SDL_Renderer* renderer) {
     }
 }
 
-void MyGame::particleVelAndLife(float reduceParticleLife) {
-    for (auto particle : particles) {
+void MyGame::particleVel() {
+    for (Particle* particle : allParticles) {
         particle->x += particle->vel_x;
         particle->y += particle->vel_y;
+    }
+}
+
+void MyGame::particleLife(float reduceParticleLife) {
+    for (Particle* particle : allParticles) {
         particle->life -= reduceParticleLife;
 
         if (particle->life <= 0.0) {
             particle->color.a = 0;
-        } else {
-            particle->color.a = (Uint8)((particle->life / 5.0) * 255);
         }
     }
 }
 
 void MyGame::particlesFollowBall(int ballXPos, int ballYPos) {
-    for (int numOfParticles = 0; numOfParticles < 5; numOfParticles++) {
+    int maxParticles[5];
+
+    for (int &particle : maxParticles) {
         double velX = -1 * getRandomNumber();
         double velY = getRandomNumber() - 0.5;
 
         SDL_Color color = { 255, 0, 0, 255 };
 
-        particles.push_back(new Particle(ballXPos + 10, ballYPos + 12, velX * 2, velY * 2, 4, 1.0, color));
+        allParticles.insert(new Particle(ballXPos + 10, ballYPos + 12, velX * 2, velY * 2, 1.0, color));
     }
-    particleVelAndLife(0.075);
+    particleVel();
+    particleLife(0.075);
 }
 
 void MyGame::particleCelebrationAfterGoal(int ballXPos, int ballYPos, bool leftGoal) {
-    for (int numOfParticles = 0; numOfParticles < 20; numOfParticles++) {
+    int maxParticles[20];
+
+    for (int &particles : maxParticles) {
         double velX, velY;
         if (leftGoal) {
             velX = 2.5 * getRandomNumber();
@@ -328,11 +348,12 @@ void MyGame::particleCelebrationAfterGoal(int ballXPos, int ballYPos, bool leftG
             velY = -2.5 * getRandomNumber();
         }
 
-        SDL_Color color = { 100, 100, 255, 255 };
+        SDL_Color color = randomColorNumber();
 
-        particles.push_back(new Particle(ballXPos, ballYPos, velX * 2, velY * 2, 4, (1.0 * 2), color));
+        allParticles.insert(new Particle(ballXPos, ballYPos, velX * 2, velY * 2, (1.0 * 2), color));
     }
-    particleVelAndLife(0.050);
+    particleVel();
+    particleLife(0.050);
 }
 
 void MyGame::update() {

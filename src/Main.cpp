@@ -21,10 +21,10 @@ static int on_receive(void* socket_ptr) {
     const int message_length = 1024;
 
     char message[message_length];
-    int received;
+    int received = 0;
 
     // TODO: while(), rather than do
-    do {
+    while (received >= 0 && is_running) {
         received = SDLNet_TCP_Recv(socket, message, message_length);
         message[received] = '\0';
 
@@ -50,7 +50,7 @@ static int on_receive(void* socket_ptr) {
             break;
         }
 
-    } while (received > 0 && is_running);
+    } 
 
     return 0;
 }
