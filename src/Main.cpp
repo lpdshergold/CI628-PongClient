@@ -5,6 +5,8 @@
 
 #include "MyGame.h"
 
+#include <vector>
+
 using namespace std;
 
 const char* IP_NAME = "localhost";
@@ -81,7 +83,7 @@ static int on_send(void* socket_ptr) {
 }
 
 // game loop
-void loop(SDL_Renderer* renderer, SDL_Renderer* secondRenderer) {
+void loop(SDL_Renderer* renderer) {
     SDL_Event event;
 
     while (is_running) {
@@ -106,17 +108,13 @@ void loop(SDL_Renderer* renderer, SDL_Renderer* secondRenderer) {
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_SetRenderDrawColor(secondRenderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-        SDL_RenderClear(secondRenderer);
 
         game->update();
 
         game->render(renderer);
-        game->render(secondRenderer);
 
         SDL_RenderPresent(renderer);
-        SDL_RenderPresent(secondRenderer);
 
         SDL_Delay(17);
     }
@@ -124,34 +122,27 @@ void loop(SDL_Renderer* renderer, SDL_Renderer* secondRenderer) {
 
 // initialising window and game renderer
 int run_game() {
-
     SDL_Window* window = SDL_CreateWindow(
-        "Multiplayer Pong Client One",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        800, 600,
-        SDL_WINDOW_SHOWN
-    );
-    SDL_Window* windowTwo = SDL_CreateWindow(
-        "Multiplayer Pong Client Two",
+        "Multiplayer Pong Client",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         800, 600,
         SDL_WINDOW_SHOWN
     );
 
-    if (window == nullptr && windowTwo == nullptr) {
+    if (window == nullptr) {
         std::cout << "Failed to create window" << SDL_GetError() << std::endl;
         return -1;
     }
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_Renderer* rendererTwo = SDL_CreateRenderer(windowTwo, -1, SDL_RENDERER_ACCELERATED);
 
-    if (renderer == nullptr && rendererTwo == nullptr) {
+    if (renderer == nullptr) {
         std::cout << "Failed to create renderer" << SDL_GetError() << std::endl;
         return -1;
     }
 
-    loop(renderer, rendererTwo);
+
+    loop(renderer);
 
     return 0;
 }
@@ -220,9 +211,11 @@ int main(int argc, char** argv) {
     SDL_CreateThread(on_receive, "ConnectionReceiveThread", (void*)socket);
     SDL_CreateThread(on_send, "ConnectionSendThread", (void*)socket);
 
+
     run_game();
 
     endGameCleanUp(socket);
+
 
     return 0;
 }

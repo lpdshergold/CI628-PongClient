@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <set>
 
 #include "SDL.h"
 #include "SDL_mixer.h"
@@ -96,14 +95,20 @@ class Image {
 
 class Particle {
     private:
+        int size;
+
+
+        SDL_Color color;
 
     public:
-    double x, y, life, vel_x, vel_y;
-    int size;
+        double x, y, life, vel_x, vel_y;
 
-    SDL_Color color;
-
-    Particle(double xPos, double yPos, double velXPos, double velYPos, double pLife, SDL_Color pColor);
+        Particle(double xPos, double yPos, double velXPos, double velYPos, double pLife, SDL_Color pColor);
+        int getParticleSize();
+        int getParticleSizeMultiply(int timesSize);
+        SDL_Color getParticleColor();
+        void setParticleColorAlpha(float alphaVal);
+        void reduceParticleLife(float reduceLife);
 };
 
 class MyGame {
@@ -138,14 +143,15 @@ class MyGame {
         // background image
         Image* background = new Image( 0, 0, 800, 600, FOOTBALL_FIELD_PATH );
 
-        std::set<Particle*> allParticles;
+        std::vector<Particle*> allParticles;
 
         void checkAllParticles(SDL_Renderer* renderer);
         void particleVel();
         void particleLife(float reduceParticleLife);
         void particlesFollowBall(int ballXPos, int ballYPos);
         void particleCelebrationAfterGoal(int ballXPos, int ballYPos, bool leftGoal);
-        double getRandomNumber();
+        void eraseParticle();
+        double getRandomVel(double velTimesAmount);
         SDL_Color randomColorNumber();
 
     public:
