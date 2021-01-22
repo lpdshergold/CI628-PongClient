@@ -19,6 +19,8 @@ static struct GameData {
 
     int playerOneScore = 0;
     int playerTwoScore = 0;
+
+    int selectPlayer = 0;
 } game_data;
 
 // class for the players
@@ -66,17 +68,19 @@ class Ball {
 class GameFont {
     private:
         int playerScore = 0;
-        std::string playerScoreText;
+        std::string playerScoreText, selectPlayerText;
 
         const char* textPath;
         int textSize, xPos, yPos;
         SDL_Color textColor;
 
     public:
-        GameFont(const char* fontPath, int fontSize, SDL_Color color, int xPos, int yPos);
+        GameFont(const char* fontPath, int fontSize, SDL_Color color, int xPos, int yPos, std::string manualText = "");
         void setScore(int score);
-        SDL_Surface* getFontSurface();
-        void renderText(SDL_Renderer* render);
+        void setString();
+        SDL_Surface* getScoreSurface();
+        SDL_Surface* getTextSurface();
+        void renderFont(SDL_Renderer* render);
 };
 
 // class for images
@@ -116,6 +120,7 @@ class Particle {
 
 class MyGame {
     private:
+        // remove /src from file path to be able to build multiple clients
         // sound effect paths
         const char* BAT_HIT_PATH = "../src/res/sounds/bat_hit.wav";
         const char* GOAL_PATH = "../src/res/sounds/goal.wav";
@@ -131,7 +136,7 @@ class MyGame {
 
         // player 1 and 2
         Player* playerOne = new Player( 200, game_data.player1Y, 25, 75, PLAYER_ONE_PATH );
-        Player* playerTwo = new Player( 600, game_data.player2Y, 25, 75, PLAYER_TWO_PATH );
+        Player* playerTwo = new Player( 590, game_data.player2Y, 25, 75, PLAYER_TWO_PATH );
 
         // ball instance
         Ball* ball = new Ball( game_data.ballX, game_data.ballY, 30, 30, FOOTBALL_PATH );
@@ -142,6 +147,9 @@ class MyGame {
 
         GameFont* firstPlayerScore = new GameFont( FFF_FONT_PATH, FONT_SIZE, color, 175, 75 );
         GameFont* secondPlayerScore = new GameFont( FFF_FONT_PATH, FONT_SIZE, color, 575, 75 );
+
+        GameFont* selectPlayerOneText = new GameFont(FFF_FONT_PATH, 25, color, 25, 0, "Player one: press 1 key");
+        GameFont* selectPlayerTwoText = new GameFont(FFF_FONT_PATH, 25, color, 500, 0, "Player two: press 2 key");
 
         // background image
         Image* background = new Image( 0, 0, 800, 600, FOOTBALL_FIELD_PATH );
@@ -162,7 +170,7 @@ class MyGame {
 
         std::vector<std::string> messages;
 
-        Mix_Chunk playSound(const char* path);
+        void playSound(const char* path);
 
         void on_receive(std::string message, std::vector<std::string>& args);
         void send(std::string message);

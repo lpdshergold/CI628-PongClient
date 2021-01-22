@@ -3,8 +3,6 @@
 
 using namespace std;
 
-
-
 // Player constructor
 Player::Player(int x, int y, int width, int height, const char* path) {
     this->X = x;
@@ -79,14 +77,14 @@ void Ball::updateBall(int xPos, int yPos) {
 }
 
 
-
 // GameFont constructor
-GameFont::GameFont(const char* fontPath, int fontSize, SDL_Color color, int x, int y) {
+GameFont::GameFont(const char* fontPath, int fontSize, SDL_Color color, int x, int y, std::string manualText) {
     this->textPath = fontPath;
     this->textSize = fontSize;
     this->textColor = color;
     this->xPos = x;
     this->yPos = y;
+    this->selectPlayerText = manualText;
 }
 
 // set the score of the player
@@ -95,19 +93,46 @@ void GameFont::setScore(int score) {
     playerScoreText = std::to_string(playerScore);
 }
 
+void GameFont::setString() {
+    selectPlayerText = "";
+}
+
 // function to get the font surface
-SDL_Surface* GameFont::getFontSurface() {
+SDL_Surface* GameFont::getScoreSurface() {
     TTF_Font* textFont = TTF_OpenFont(textPath, textSize);
 
-    if (textFont == nullptr) {
+    if (&textFont == nullptr) {
         printf("TTF_Font: %s\n", TTF_GetError());
     }
 
     std::string playerScoreText = std::to_string(playerScore);
+    const char* formattedScore = playerScoreText.c_str();
 
     SDL_Color fontColor = textColor;
 
-    SDL_Surface* tempSurface = TTF_RenderText_Blended(textFont, playerScoreText.c_str(), fontColor);
+    SDL_Surface* tempSurface = TTF_RenderText_Blended(textFont, formattedScore, fontColor);
+
+    // clear font from memory
+    TTF_CloseFont(textFont);
+    textFont = nullptr;
+
+    // return a surface to where this function is called
+    return tempSurface;
+}
+
+SDL_Surface* GameFont::getTextSurface() {
+    TTF_Font* textFont = TTF_OpenFont(textPath, textSize);
+
+    if (&textFont == nullptr) {
+        printf("TTF_Font: %s\n", TTF_GetError());
+    }
+
+    std::string playerSelectText = selectPlayerText;
+    const char* formattedText = playerSelectText.c_str();
+
+    SDL_Color fontColor = textColor;
+
+    SDL_Surface* tempSurface = TTF_RenderText_Blended(textFont, formattedText, fontColor);
 
     // clear font from memory
     TTF_CloseFont(textFont);
@@ -118,9 +143,14 @@ SDL_Surface* GameFont::getFontSurface() {
 }
 
 // render function to show font on screen
-void GameFont::renderText(SDL_Renderer* render) {
+void GameFont::renderFont(SDL_Renderer* render) {
     // retrieve the font surface
-    SDL_Surface* textSurface = getFontSurface();
+    SDL_Surface* textSurface;
+    if (selectPlayerText != "") {
+        textSurface = getTextSurface();
+    } else {
+        textSurface = getScoreSurface();
+    }
 
     if (&textSurface != nullptr) {
         // create texture from existing textSurface
@@ -151,7 +181,6 @@ void GameFont::renderText(SDL_Renderer* render) {
         printf("SDL_Surface: renderText error");
     }
 }
-
 
 
 // Image Constructor
@@ -237,7 +266,7 @@ SDL_Rect Particle::setParticleRect(int timesSize) {
 
 
 // sound effect function (if music is needed, make playMusic())
-Mix_Chunk MyGame::playSound(const char* path = "") {
+void MyGame::playSound(const char* path = "") {
     Mix_Chunk* sound = nullptr;
     sound = Mix_LoadWAV(path);
 
@@ -264,12 +293,7 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
             game_data.ballX = stoi(args.at(2));
             game_data.ballY = stoi(args.at(3));
         }
-    } else {
-        cout << "Received: " << cmd << endl;
-    }
-
-    // check for SCORES from the server
-    if (cmd == "SCORES") {
+    } else if (cmd == "SCORES") {
         playSound(GOAL_PATH); // play goal sound
 
         // should get two arguments
@@ -278,19 +302,16 @@ void MyGame::on_receive(string cmd, vector<string>& args) {
             game_data.playerOneScore = stoi(args.at(0));
             game_data.playerTwoScore = stoi(args.at(1));
         }
-    }
-
-    if (cmd == "HIT_WALL_LEFTGAME_DATA") {
+    } else if (cmd == "HIT_WALL_LEFTGAME_DATA") {
         particleCelebrationAfterGoal(game_data.ballX, game_data.ballY, true);
     } else if (cmd == "HIT_WALL_RIGHTGAME_DATA") {
         particleCelebrationAfterGoal(game_data.ballX, game_data.ballY, false);
-    }
-
-    // check to see if the ball hit one of the bats
-    if (cmd == "BALL_HIT_BAT1") {
+    } else if (cmd == "BALL_HIT_BAT1") {
         playSound(BAT_HIT_PATH); // play hitting bat sound
     } else if (cmd == "BALL_HIT_BAT2") {
         playSound(BAT_HIT_PATH); // play hitting bat sound
+    } else {
+        cout << "Received: " << cmd << endl;
     }
 }
 
@@ -299,21 +320,43 @@ void MyGame::send(string message) {
 }
 
 void MyGame::input(SDL_Event& event) {
-    switch (event.key.keysym.sym) {
-        case SDLK_w:
-            send(event.type == SDL_KEYDOWN ? "W_DOWN" : "W_UP");
-            break;
-        case SDLK_s:
-            send(event.type == SDL_KEYDOWN ? "S_DOWN" : "S_UP");
-            break;
-        case SDLK_i:
-            send(event.type == SDL_KEYDOWN ? "I_DOWN" : "I_UP");
-            break;
-        case SDLK_k:
-            send(event.type == SDL_KEYDOWN ? "K_DOWN" : "K_UP");
-            break;
-        default:
-            cout << "Not aware of that key" << endl;
+    if (game_data.selectPlayer == 0) {
+        switch (event.key.keysym.sym) {
+            case SDLK_1:
+                game_data.selectPlayer = 1;
+                selectPlayerOneText->setString();
+                selectPlayerTwoText->setString();
+                break;
+            case SDLK_2:
+                game_data.selectPlayer = 2;
+                selectPlayerOneText->setString();
+                selectPlayerTwoText->setString();
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (game_data.selectPlayer == 1) {
+        switch (event.key.keysym.sym) {
+            case SDLK_w:
+                send(event.type == SDL_KEYDOWN ? "W_DOWN" : "W_UP");
+                break;
+            case SDLK_s:
+                send(event.type == SDL_KEYDOWN ? "S_DOWN" : "S_UP");
+                break;
+        }
+    } else if (game_data.selectPlayer == 2) {
+        switch (event.key.keysym.sym) {
+            case SDLK_i:
+                send(event.type == SDL_KEYDOWN ? "I_DOWN" : "I_UP");
+                break;
+            case SDLK_k:
+                send(event.type == SDL_KEYDOWN ? "K_DOWN" : "K_UP");
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -428,10 +471,15 @@ void MyGame::render(SDL_Renderer* renderer) {
     background->render(renderer);
 
     // render player one score to screen
-    firstPlayerScore->renderText(renderer);
+    firstPlayerScore->renderFont(renderer);
 
     // render player two score to screen
-    secondPlayerScore->renderText(renderer);
+    secondPlayerScore->renderFont(renderer);
+
+    if (game_data.selectPlayer == 0) {
+        selectPlayerOneText->renderFont(renderer);
+        selectPlayerTwoText->renderFont(renderer);
+    }
 
     // render player1 onscreen
     playerOne->render(renderer);
